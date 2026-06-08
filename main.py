@@ -1,7 +1,9 @@
 # Import the necessary libraries
 from pathlib import Path
-from crewai import Agent, Crew, Process, Task
+from crewai import Agent, Crew, Process, Task, LLM
 from crewai_tools import SerperDevTool, YoutubeVideoSearchTool
+
+from tools.gpt_image_tool import GPTImageTool
 
 # Define the path to the skills folder
 _SKILLS_ROOT = Path(__file__).resolve().parent / "skills"
@@ -9,6 +11,11 @@ _SKILLS_ROOT = Path(__file__).resolve().parent / "skills"
 # Define Tools
 web_research_tool = SerperDevTool()
 youtube_research_tool = YoutubeVideoSearchTool()
+image_generator_tool = GPTImageTool(
+    model="gpt-image-1",
+    quality="high",
+    output_path="linkedin_post_image.png",
+)
 
 # Define Agents
 web_researcher_agent = Agent(
@@ -44,6 +51,22 @@ linkedin_writer_agent = Agent(
     patterns, and phrasing—then write something new about {topic}, not a copy.""",
     skills = [_SKILLS_ROOT],
     verbose = True,
+)
+
+image_gnerator_agent = Agent(
+    role = "LinkedIn Post Image Creator",
+    goal="Create a visually striking image that complements the LinkedIn post about {topic}",
+    backstory=(
+        "You are a creative director who specializes in creating "
+        "scroll-stopping visuals for social media. You know that "
+        "LinkedIn images should be professional yet eye-catching, "
+        "and should visually represent the core idea of the post. "
+        "You create clean, modern images that make people stop "
+        "scrolling and read the post."
+    ),
+    tools=[image_generator_tool],
+    verbose=True,
+    allow_delegation=False 
 )
 
 # Define Tasks
@@ -102,14 +125,34 @@ linkedin_writing_task = Task(
     context = [web_research_task, youtube_research_task]
 )
 
+task_create_image = Task(
+    description=(
+        "Based on the LinkedIn post that was written, create an image "
+        "that would be the perfect visual accompaniment.\n\n"
+        "The image should:\n"
+        "- Visually represent the core theme of the post\n"
+        "- Be professional and suitable for LinkedIn\n"
+        "- Be eye-catching enough to stop someone from scrolling\n"
+        "- NOT contain any text or words in the image\n"
+        "- Use a clean, modern aesthetic\n\n"
+        "Generate a detailed prompt and use the image tool to create the image."
+    ),
+    expected_output=(
+        "The file path of the generated image (linkedin_post_image.png), along with "
+        "the prompt that was used to create it."
+    ),
+    agent=image_gnerator_agent,
+    context=[linkedin_writing_task]
+)
+
 # Define Crew
 crew = Crew(
-    agents = [web_researcher_agent, youtube_research_agent, linkedin_writer_agent],
-    tasks=[web_research_task, youtube_research_task, linkedin_writing_task],
+    agents = [web_researcher_agent, youtube_research_agent, linkedin_writer_agent, image_gnerator_agent],
+    tasks=[web_research_task, youtube_research_task, linkedin_writing_task, task_create_image],
     process = Process.sequential,
     verbose = True,
     )
 
 # Run the Crew
-result = crew.kickoff(inputs={"topic": "AI Agents", "youtube_video_url": "https://www.youtube.com/watch?v=FwOTs4UxQS4"})
+result = crew.kickoff(inputs={"topic": "Role of AI Engineer", "youtube_video_url": "https://www.youtube.com/watch?v=gT1SiZttBDE"})
 print(result.raw)
