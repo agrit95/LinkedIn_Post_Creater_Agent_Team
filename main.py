@@ -1,9 +1,10 @@
 # Import the necessary libraries
-import os
-from dotenv import load_dotenv
+from pathlib import Path
 from crewai import Agent, Crew, Process, Task
 from crewai_tools import SerperDevTool, YoutubeVideoSearchTool
 
+# Define the path to the skills folder
+_SKILLS_ROOT = Path(__file__).resolve().parent / "skills"
 
 # Define Tools
 web_research_tool = SerperDevTool()
@@ -41,6 +42,7 @@ linkedin_writer_agent = Agent(
     generic corporate fluff — every post has personality and edge. You have access
     to a knowledge base of your past LinkedIn posts: query it for tone, pacing, hook
     patterns, and phrasing—then write something new about {topic}, not a copy.""",
+    skills = [_SKILLS_ROOT],
     verbose = True,
 )
 
@@ -57,7 +59,7 @@ web_research_task = Task(
     Focus on recent, high-quality sources. This research will be used to write a LinkedIn post.""",
     expected_output = """A research brief with 3-5 key insights about {topic}, including relevant stats,
     expert opinions, and examples. Each insight should be a short paragraph.""",
-    agent = web_researcher_agent
+    agent = web_researcher_agent,
 )
 
 youtube_research_task = Task(
