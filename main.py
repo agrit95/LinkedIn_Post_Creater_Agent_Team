@@ -1,6 +1,6 @@
 # Import the necessary libraries
 from pathlib import Path
-from crewai import Agent, Crew, Process, Task, LLM
+from crewai import Agent, Crew, Process, Task
 from crewai_tools import SerperDevTool, YoutubeVideoSearchTool
 
 from tools.gpt_image_tool import GPTImageTool
