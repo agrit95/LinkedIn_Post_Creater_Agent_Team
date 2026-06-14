@@ -153,6 +153,30 @@ crew = Crew(
     verbose = True,
     )
 
+
 # Run the Crew
-result = crew.kickoff(inputs={"topic": "Role of AI Engineer", "youtube_video_url": "https://www.youtube.com/watch?v=gT1SiZttBDE"})
-print(result.raw)
+def main() -> None:
+    """Prompt for topic and YouTube URL, run the crew, print the final result string.
+
+    Side effects: reads stdin for two fields; runs ``crew.kickoff`` (LLM/tool calls,
+    file outputs from tasks); prints ``result.raw`` to stdout.
+    """
+    topic = input("Topic for the LinkedIn post: ").strip()
+    while not topic:
+        topic = input("Topic cannot be empty. Try again: ").strip()
+
+    youtube_video_url = input("YouTube video URL: ").strip()
+    while not youtube_video_url:
+        youtube_video_url = input("YouTube URL cannot be empty. Try again: ").strip()
+
+    result = crew.kickoff(
+        inputs={
+            "topic": topic,
+            "youtube_video_url": youtube_video_url,
+        }
+    )
+    print(result.raw)
+
+
+if __name__ == "__main__":
+    main()
