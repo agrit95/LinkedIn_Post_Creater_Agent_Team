@@ -1,12 +1,25 @@
 # Import the necessary libraries
 from pathlib import Path
 from crewai import Agent, Crew, Process, Task
+from crewai.knowledge.source.text_file_knowledge_source import TextFileKnowledgeSource
 from crewai_tools import SerperDevTool, YoutubeVideoSearchTool
 
 from tools.gpt_image_tool import GPTImageTool
 
 # Define the path to the skills folder
 _SKILLS_ROOT = Path(__file__).resolve().parent / "skills"
+
+
+_KNOWLEDGE_DIR = Path(__file__).resolve().parent / "knowledge"
+_knowledge_paths = sorted(_KNOWLEDGE_DIR.glob("*.txt")) + sorted(_KNOWLEDGE_DIR.glob("*.md"))
+_knowledge_paths = [p.resolve() for p in _knowledge_paths if p.is_file()]
+# CrewAI prepends KNOWLEDGE_DIRECTORY to *str* paths only; pass Path objects so absolute paths work.
+_linkedin_post_knowledge = (
+    [TextFileKnowledgeSource(file_paths=_knowledge_paths)]
+    if _knowledge_paths
+    else []
+)
+
 
 # Define Tools
 web_research_tool = SerperDevTool()
@@ -50,6 +63,7 @@ linkedin_writer_agent = Agent(
     to a knowledge base of your past LinkedIn posts: query it for tone, pacing, hook
     patterns, and phrasing—then write something new about {topic}, not a copy.""",
     skills = [_SKILLS_ROOT],
+    knowledge_sources =_linkedin_post_knowledge,
     verbose = True,
 )
 
