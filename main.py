@@ -127,6 +127,7 @@ linkedin_writing_task = Task(
     - Use short paragraphs (1-2 sentences each)
     - Include insights from BOTH the web research and the video
     - End with a question or call-to-action to drive comments
+    - Add 4-6 relevant emojis naturally throughout
     - Add 3-5 relevant hashtags at the end
     - Tone: professional but conversational, opinionated, not generic
 
